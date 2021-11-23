@@ -1,0 +1,10 @@
+{
+  "domain": "mpk_lodz",
+  "name": "MPK Łódź",
+  "documentation": "https://github.com/PiotrMachowski/Home-Assistant-custom-components-MPK-Lodz",
+  "dependencies": [],
+  "codeowners": ["@PiotrMachowski"],
+  "requirements": ["requests"],
+  "version": "v1.0.0",
+  "iot_class": "cloud_polling"
+}
