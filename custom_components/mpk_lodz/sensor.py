@@ -78,7 +78,7 @@ class MpkLodzSensor(Entity):
         return None
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         attr = dict()
         attr['stop_name'] = self._real_stop_name
         if self._departures is not None:
