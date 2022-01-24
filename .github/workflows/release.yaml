@@ -1,0 +1,27 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Prepare release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download repo
+        uses: actions/checkout@v1
+
+      - name: Zip mpk_lodz dir
+        run: |
+          cd /home/runner/work/Home-Assistant-custom-components-MPK-Lodz/Home-Assistant-custom-components-MPK-Lodz/custom_components/mpk_lodz
+          zip mpk_lodz.zip -r ./
+
+      - name: Upload zip to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /home/runner/work/Home-Assistant-custom-components-MPK-Lodz/Home-Assistant-custom-components-MPK-Lodz/custom_components/mpk_lodz/mpk_lodz.zip
+          asset_name: mpk_lodz.zip
+          tag: ${{ github.ref }}
+          overwrite: true
