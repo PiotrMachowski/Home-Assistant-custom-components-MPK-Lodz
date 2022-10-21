@@ -1,7 +1,7 @@
 [![HACS Custom][hacs_shield]][hacs]
 [![GitHub Latest Release][releases_shield]][latest_release]
 [![GitHub All Releases][downloads_total_shield]][releases]
-[![Buy me a coffee][buy_me_a_coffee_shield]][buy_me_a_coffee]
+[![Ko-Fi][ko_fi_shield]][ko_fi]
 [![PayPal.Me][paypal_me_shield]][paypal_me]
 
 
@@ -13,6 +13,9 @@
 
 [releases]: https://github.com/PiotrMachowski/Home-Assistant-custom-components-MPK-Lodz/releases
 [downloads_total_shield]: https://img.shields.io/github/downloads/PiotrMachowski/Home-Assistant-custom-components-MPK-Lodz/total
+
+[ko_fi_shield]: https://img.shields.io/static/v1.svg?label=%20&message=Ko-Fi&color=F16061&logo=ko-fi&logoColor=white
+[ko_fi]: https://ko-fi.com/piotrmachowski
 
 [buy_me_a_coffee_shield]: https://img.shields.io/static/v1.svg?label=%20&message=Buy%20me%20a%20coffee&color=6f4e37&logo=buy%20me%20a%20coffee&logoColor=white
 [buy_me_a_coffee]: https://www.buymeacoffee.com/PiotrMachowski
@@ -35,10 +38,13 @@ This sensor uses unofficial API provided by MPK Łódź.
 
 | Key | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
-| `id` | `positive integer` | `True` | - | ID of a stop |
+| `id` | `positive integer` | `False` | - | ID of a stop |
+| `num` | `positive integer` | `False` | - | Number of a stop |
 | `name` | `string` | `False` | id | Name of a stop |
 | `lines` | `list` | `False` | all available | List of monitored lines. |
 | `directions` | `list` | `False` | all available | List of monitored directions. |
+
+One of `id` or `num` must be provided!
 
 ## Example usage
 
@@ -77,7 +83,7 @@ rm mpk_lodz.zip
 
 ## Hints
 
-* Value for `stop_id` can be retrieved from [*ITS Łódź*](http://rozklady.lodz.pl/). After choosing a desired stop open its electronical table. `stop_id` is a number visibile in URL.
+* Value for `id`/`num` can be retrieved from [*ITS Łódź*](http://rozklady.lodz.pl/). After choosing a desired stop open its electronical table. There should be a number visibile in URL. If URL contains `busStopId` you should use this number as `id`. If URL contains `busStopNum` you should use this number as `num`. 
 
 * These sensors provides attributes which can be used in [*HTML card*](https://github.com/PiotrMachowski/Home-Assistant-Lovelace-HTML-card) or [*HTML Template card*](https://github.com/PiotrMachowski/Home-Assistant-Lovelace-HTML-Template-card): `html_timetable`, `html_departures`
   * HTML card:
@@ -102,5 +108,5 @@ rm mpk_lodz.zip
         {{ state_attr('sensor.mpk_lodz_2873','html_departures') }}
     ```
 
-<a href="https://www.buymeacoffee.com/PiotrMachowski" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+<a href='https://ko-fi.com/piotrmachowski' target='_blank'><img height='35' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' />
 <a href="https://paypal.me/PiMachowski" target="_blank"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" border="0" alt="PayPal Logo" style="height: auto !important;width: auto !important;"></a>

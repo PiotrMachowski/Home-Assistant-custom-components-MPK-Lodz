@@ -11,6 +11,7 @@ from homeassistant.helpers.entity import async_generate_entity_id
 
 DEFAULT_NAME = 'MPK Łódź'
 
+CONF_NUM = 'num'
 CONF_STOPS = 'stops'
 CONF_LINES = 'lines'
 CONF_DIRECTIONS = 'directions'
@@ -19,7 +20,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     vol.Required(CONF_STOPS): vol.All(cv.ensure_list, [
         vol.Schema({
-            vol.Required(CONF_ID): cv.positive_int,
+            vol.Optional(CONF_ID, default=0): cv.positive_int,
+            vol.Optional(CONF_NUM, default=0): cv.positive_int,
             vol.Optional(CONF_NAME): cv.string,
             vol.Optional(CONF_LINES, default=[]): cv.ensure_list,
             vol.Optional(CONF_DIRECTIONS, default=[]): cv.ensure_list
@@ -31,25 +33,33 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     name = config.get(CONF_NAME)
     stops = config.get(CONF_STOPS)
     dev = []
-    for stop in stops:
-        stop_id = str(stop.get(CONF_ID))
-        lines = stop.get(CONF_LINES)
-        directions = stop.get(CONF_DIRECTIONS)
-        real_stop_name = MpkLodzSensor.get_stop_name(stop_id)
+    for stop_cfg in stops:
+        stop_id = str(stop_cfg.get(CONF_ID))
+        stop_num = str(stop_cfg.get(CONF_NUM))
+        use_stop_num = stop_num != "0"
+        stop = stop_num if use_stop_num else stop_id
+        print(stop_id)
+        print(stop_num)
+        lines = stop_cfg.get(CONF_LINES)
+        directions = stop_cfg.get(CONF_DIRECTIONS)
+        real_stop_name = MpkLodzSensor.get_stop_name(stop, use_stop_num)
         if real_stop_name is None:
-            raise Exception("Invalid stop id: {}".format(stop_id))
-        stop_name = stop.get(CONF_NAME) or stop_id
+            raise Exception(f"Invalid stop id/num: {stop_id} / {stop_num} / {use_stop_num} / {stop}")
+        stop_name = stop_cfg.get(CONF_NAME) or stop_id
+        if use_stop_num:
+            stop_name = stop_cfg.get(CONF_NAME) or f"num_{stop_num}"
         uid = '{}_{}'.format(name, stop_name)
         entity_id = async_generate_entity_id(ENTITY_ID_FORMAT, uid, hass=hass)
-        dev.append(MpkLodzSensor(entity_id, name, stop_id, stop_name, real_stop_name, lines, directions))
+        dev.append(MpkLodzSensor(entity_id, name, stop, use_stop_num, stop_name, real_stop_name, lines, directions))
     add_entities(dev, True)
 
 
 class MpkLodzSensor(Entity):
-    def __init__(self, entity_id, name, stop_id, stop_name, real_stop_name, watched_lines, watched_directions):
+    def __init__(self, entity_id, name, stop, use_stop_num, stop_name, real_stop_name, watched_lines, watched_directions):
         self.entity_id = entity_id
         self._name = name
-        self._stop_id = stop_id
+        self._stop = stop
+        self._use_stop_num = use_stop_num
         self._watched_lines = watched_lines
         self._watched_directions = watched_directions
         self._stop_name = stop_name
@@ -95,7 +105,7 @@ class MpkLodzSensor(Entity):
 
     def update(self):
         now = datetime.now()
-        data = MpkLodzSensor.get_data(self._stop_id)
+        data = MpkLodzSensor.get_data(self._stop, self._use_stop_num)
         if data is None:
             return
         departures = data[0][0]
@@ -166,15 +176,17 @@ class MpkLodzSensor(Entity):
         return departures_by_line
 
     @staticmethod
-    def get_stop_name(stop_id):
-        data = MpkLodzSensor.get_data(stop_id)
+    def get_stop_name(stop, use_stop_num):
+        data = MpkLodzSensor.get_data(stop, use_stop_num)
         if data is None:
             return None
         return data[0].attrib["name"]
 
     @staticmethod
-    def get_data(stop_id):
-        address = "http://rozklady.lodz.pl/Home/GetTimeTableReal?busStopId={}".format(stop_id)
+    def get_data(stop, use_stop_num):
+        address = "http://rozklady.lodz.pl/Home/GetTimeTableReal?busStopId={}".format(stop)
+        if use_stop_num:
+            address = "http://rozklady.lodz.pl/Home/GetTimeTableReal?busStopNum={}".format(stop)
         headers = {
             'referer': address,
         }
